@@ -1,7 +1,9 @@
 
+require("dotenv").config();
+import prisma from "./prisma-db.js";
+
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 
 const pool = require("./db");
 
@@ -11,17 +13,25 @@ app.use(cors());
 app.use(express.json());
 
 // Ruta para comprobar la conexión
+app.get("/", (req, res) => {
+    res.send("Backend funcionando con Prisma");
+});
+
+
 app.get("/db-test", async (req, res) => {
     try {
-        const result = await pool.query(
-            "SELECT NOW() AS fecha, current_database() AS base"
-        );
+        const result = await prisma.$queryRaw`
+      SELECT
+        current_database() AS base,
+        current_user AS usuario
+    `;
 
-        res.json(result.rows[0]);
+        res.json(result[0]);
     } catch (error) {
         console.error("Error de PostgreSQL:", error.message);
+
         res.status(500).json({
-            error: "No se pudo consultar PostgreSQL",
+            error: "No se pudo consultar la base de datos",
         });
     }
 });
@@ -40,6 +50,7 @@ app.get("/products", async (req, res) => {
             error: "Error al obtener los productos",
         });
     }
+
 });
 
 const PORT = process.env.PORT || 3000;
@@ -47,3 +58,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
+

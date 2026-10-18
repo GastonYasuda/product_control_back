@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model category {
+  category_id   Int        @id @default(autoincrement())
+  category_name String?    @db.VarChar(30)
+  category_img  String?    @db.VarChar(200)
+  products      products[]
+}
+
+model ordered_products {
+  ordered_product_id       Int       @id @default(autoincrement())
+  order_id                 Int?
+  product_id               Int?
+  ordered_product_quantity Int?
+  orders                   orders?   @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_id")
+  products                 products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_id")
+}
+
+model orders {
+  order_id         Int                @id @default(autoincrement())
+  order_date       DateTime?          @default(now()) @db.Timestamp(6)
+  order_status     Int                @default(1)
+  order_user       Int
+  ordered_products ordered_products[]
+  status           status             @relation(fields: [order_status], references: [status_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_status")
+  users            users              @relation(fields: [order_user], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_user")
+}
+
+model products {
+  product_id       Int                @id @default(autoincrement())
+  product_name     String?            @db.VarChar(50)
+  product_img      String?            @db.VarChar(200)
+  product_sku      String?            @db.VarChar(20)
+  product_quantity Int?
+  product_price    Int?
+  product_stock    Int?
+  product_pending  Boolean?
+  product_category Int?
+  product_supplier Int?
+  ordered_products ordered_products[]
+  category         category?          @relation(fields: [product_category], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_category")
+  supplier         supplier?          @relation(fields: [product_supplier], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_supplier")
+}
+
+model rol {
+  rol_id   Int     @id @default(autoincrement())
+  rol_type String? @db.VarChar(20)
+  users    users[]
+}
+
+model status {
+  status_id   Int      @id @default(autoincrement())
+  status_name String?  @db.VarChar(30)
+  orders      orders[]
+}
+
+model supplier {
+  supplier_id   Int        @id @default(autoincrement())
+  supplier_name String?    @db.VarChar(30)
+  supplier_img  String?    @db.VarChar(200)
+  products      products[]
+}
+
+model users {
+  user_id   Int      @id @default(autoincrement())
+  user_name String?  @db.VarChar(20)
+  user_pass String?  @db.VarChar(20)
+  user_rol  Int
+  orders    orders[]
+  rol       rol      @relation(fields: [user_rol], references: [rol_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_rol")
+}
