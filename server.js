@@ -92,6 +92,20 @@ app.get("/products/:id", async (req, res) => {
     }
 })
 
+//------------------------- GET allStatus
+app.get("/status", async (req, res) => {
+    try {
+        const statuses = await prisma.status.findMany({
+            select: { status_id: true, status_name: true },
+            orderBy: { status_id: "asc" },
+        });
+        res.json(statuses);
+    } catch (error) {
+        console.error("Error al obtener estados", error);
+        res.status(500).json({ error: "No se pudieron obtener los estados" });
+    }
+});
+
 
 //------------------------- GET allUsers
 
