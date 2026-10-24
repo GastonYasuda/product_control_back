@@ -15,10 +15,11 @@ model category {
 }
 
 model ordered_products {
-  ordered_product_id       Int       @id @default(autoincrement())
   order_id                 Int?
   product_id               Int?
   ordered_product_quantity Int?
+  ordered_product_id       Int       @id @default(autoincrement())
+  product_checked          Boolean?  @default(false)
   orders                   orders?   @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_id")
   products                 products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_id")
 }
@@ -38,13 +39,13 @@ model products {
   product_name     String?            @db.VarChar(50)
   product_img      String?            @db.VarChar(200)
   product_sku      String?            @db.VarChar(20)
-  product_quantity Int?
   product_price    Int?
   product_stock    Int?
-  product_pending  Boolean?
   product_category Int?
   product_supplier Int?
+  product_count    Int?
   ordered_products ordered_products[]
+  pending_orders   pending_orders[]
   category         category?          @relation(fields: [product_category], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_category")
   supplier         supplier?          @relation(fields: [product_supplier], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_product_supplier")
 }
@@ -69,10 +70,23 @@ model supplier {
 }
 
 model users {
-  user_id   Int      @id @default(autoincrement())
-  user_name String?  @db.VarChar(20)
-  user_pass String?  @db.VarChar(20)
-  user_rol  Int
-  orders    orders[]
-  rol       rol      @relation(fields: [user_rol], references: [rol_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_rol")
+  user_id        Int              @id @default(autoincrement())
+  user_name      String?          @db.VarChar(20)
+  user_pass      String?          @db.VarChar(20)
+  user_rol       Int
+  orders         orders[]
+  pending_orders pending_orders[]
+  rol            rol              @relation(fields: [user_rol], references: [rol_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_rol")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model pending_orders {
+  pending_order_id       Int      @id @default(autoincrement())
+  pending_order_user     Int
+  product_id             Int
+  pending_order_quantity Int
+  users                  users    @relation(fields: [pending_order_user], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pending_order_user")
+  products               products @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pending_product_id")
+
+  @@unique([pending_order_user, product_id], map: "uq_pending_user_product")
 }
