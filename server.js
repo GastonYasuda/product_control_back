@@ -92,6 +92,7 @@ app.get("/products/:id", async (req, res) => {
     }
 })
 
+
 //------------------------- GET allStatus
 app.get("/status", async (req, res) => {
     try {
@@ -107,6 +108,48 @@ app.get("/status", async (req, res) => {
 });
 
 
+//------------------------- PATCH updateOrderStatus
+
+app.patch("/orders/:id/status", async (req, res) => {
+    const orderId = Number(req.params.id);
+    const orderStatus = Number(req.body.order_status);
+
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+        return res.status(400).json({ error: "El id de la orden debe ser un número entero positivo" });
+    }
+    if (!Number.isInteger(orderStatus) || orderStatus <= 0) {
+        return res.status(400).json({ error: "order_status debe ser un número entero positivo" });
+    }
+
+    try {
+        const order = await prisma.orders.update({
+            where: { order_id: orderId },
+            data: { order_status: orderStatus },
+            select: {
+                order_id: true,
+                status: { select: { status_id: true, status_name: true } },
+            },
+        });
+
+        res.json({
+            order_id: order.order_id,
+            status_id: order.status.status_id,
+            status_name: order.status.status_name,
+        });
+
+    } catch (error) {
+        console.error("Error al actualizar estado", error);
+        if (error.code === "P2025") {
+            return res.status(404).json({ error: "Orden no encontrada" });
+        }
+        if (error.code === "P2003") {
+            return res.status(400).json({ error: "El estado indicado no existe" });
+        }
+        res.status(500).json({ error: "Error al actualizar el estado de la orden" });
+    }
+});
+
+
 //------------------------- GET allUsers
 
 app.get("/users", async (req, res) => {
@@ -116,7 +159,8 @@ app.get("/users", async (req, res) => {
             include: {
                 rol: { select: { rol_type: true } },
                 orders: true,
-                pending_orders: true,
+                pending_orders: { omit: { pending_order_id: true } },
+                // pending_orders: true,
 
             }
         })
@@ -457,8 +501,8 @@ app.get("/users/:id/orders", async (req, res) => {
         res.json(
             order.map(({ users, status, ordered_products, ...rest }) => ({
                 ...rest,
-                user: users?.user_name ?? null,
-                status: status?.status_name ?? null,
+                user_name: users?.user_name ?? null,
+                status_name: status?.status_name ?? null,
                 ordered_products: ordered_products.map(({ products, ...op }) => ({
                     product_name: products?.product_name ?? null,
                     ...op,
@@ -604,7 +648,7 @@ app.get("/users/:id/pending", async (req, res) => {
         });
 
         res.json(items.map(({ products, ...item }) => ({
-            product_name: products?.product_name ?? null,
+            product_id: products?.product_name ?? null,
             ...item,
         })));
     } catch (error) {
@@ -652,24 +696,45 @@ app.put("/users/:id/pending", async (req, res) => {
 
 //------------------------- DELETE pending_products
 
-app.delete("/users/:id/pending/:productId", async (req, res) => {
+app.delete("/users/:id/delete-pending/:productId", async (req, res) => {
     const userId = Number(req.params.id);
     const productId = Number(req.params.productId);
-    try {
-        const result = await prisma.pending_orders.deleteMany({
-            where: { pending_order_user: userId, product_id: productId },
-        });
-        if (result.count === 0) {
-            return res.status(404).json({ error: "El producto no está en el carrito" });
-        }
-        res.status(204).send().json({ message: 'Eliminado correctamente' });
 
+    try {
+        console.log("Usuario recibido:", userId);
+        console.log("Producto recibido:", productId);
+
+        const pendientes = await prisma.pending_orders.findMany({
+            where: {
+                pending_order_user: userId,
+                product_id: productId,
+            },
+        });
+
+        console.log("Pendientes encontrados:", pendientes);
+
+        const result = await prisma.pending_orders.deleteMany({
+            where: {
+                pending_order_user: userId,
+                product_id: productId,
+            },
+        });
+
+        if (result.count === 0) {
+            return res.status(404).json({
+                error: `No se encontró el pendiente del producto ${productId} para el usuario ${userId}`,
+            });
+        }
+
+        return res.status(204).send();
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "No se pudo quitar el producto" });
+        console.error("Error al eliminar pendiente:", error);
+
+        return res.status(500).json({
+            error: "No se pudo quitar el producto",
+        });
     }
 });
-
 
 
 
