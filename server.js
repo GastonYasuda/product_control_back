@@ -567,8 +567,10 @@ app.patch("/orders/:id", async (req, res) => {
 
 //------------------------- ADD order
 
-app.post("/addOrder", async (req, res) => {
-    const { user_id, products } = req.body;
+app.post("/users/:id/addOrder", async (req, res) => {
+    const user_id = Number(req.params.id);
+
+    const { products } = req.body;
 
     // Validaciones básicas
     if (!Number.isInteger(user_id) || user_id <= 0) {
