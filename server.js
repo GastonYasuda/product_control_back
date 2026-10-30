@@ -739,6 +739,41 @@ app.delete("/users/:id/delete-pending/:productId", async (req, res) => {
 });
 
 
+//------------------------- DELETE AllPending_products
+
+app.delete("/users/:id/delete-pending", async (req, res) => {
+    const userId = Number(req.params.id);
+
+    try {
+        console.log("Usuario recibido:", userId);
+
+        const pendientes = await prisma.pending_orders.findMany({
+            where: {
+                pending_order_user: userId,
+            },
+        });
+
+        const result = await prisma.pending_orders.deleteMany({
+            where: {
+                pending_order_user: userId,
+            },
+        });
+
+        if (result.count === 0) {
+            return res.status(404).json({
+                error: `No se encontró el pendiente del producto ${productId} para el usuario ${userId}`,
+            });
+        }
+
+        return res.status(204).send();
+    } catch (error) {
+        console.error("Error al eliminar pendiente:", error);
+
+        return res.status(500).json({
+            error: "No se pudo quitar el producto",
+        });
+    }
+});
 
 
 const PORT = process.env.PORT || 3000;
