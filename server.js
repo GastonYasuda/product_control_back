@@ -776,6 +776,39 @@ app.delete("/users/:id/delete-pending", async (req, res) => {
 });
 
 
+//------------------------- PATCH updateStock
+app.patch("/products/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const stock = Number(req.body.product_stock);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ error: "Id inválido" });
+    }
+    if (!Number.isInteger(stock) || stock < 0) {
+        return res.status(400).json({ error: "El stock debe ser un entero mayor o igual a 0" });
+    }
+
+    try {
+        const updated = await prisma.products.update({
+            where: { product_id: id },
+            data: { product_stock: stock },
+            select: {
+                product_name: true,
+                product_stock: true,
+            }
+        });
+        res.json(updated);
+
+    } catch (error) {
+        console.error(error);
+        if (error.code === "P2025") {
+            return res.status(404).json({ error: "Producto no encontrado" });
+        }
+        res.status(500).json({ error: "Error al actualizar stock" });
+    }
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
