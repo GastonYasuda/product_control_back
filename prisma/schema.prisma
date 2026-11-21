@@ -79,7 +79,6 @@ model users {
   rol            rol              @relation(fields: [user_rol], references: [rol_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_rol")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model pending_orders {
   pending_order_id       Int      @id @default(autoincrement())
   pending_order_user     Int
