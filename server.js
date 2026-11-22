@@ -150,6 +150,7 @@ app.patch("/orders/:id/status", async (req, res) => {
 });
 
 
+
 //------------------------- GET allUsers
 
 app.get("/users", async (req, res) => {
@@ -165,9 +166,7 @@ app.get("/users", async (req, res) => {
             }
         })
 
-
         // res.json(users)
-
         res.json(
             users.map(({ rol, ...user }) => ({
                 user_rol: rol?.rol_type ?? null,

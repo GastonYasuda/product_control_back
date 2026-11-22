@@ -20,6 +20,8 @@
     "tsx": "^4.23.15"
   },
   "dependencies": {
+    "@neon/config": "^1.14.6",
+    "@neon/env": "^2.1.9",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "cors": "^2.8.6",
