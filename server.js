@@ -1,40 +1,21 @@
 
-require("dotenv").config();
+import "dotenv/config";
 import prisma from "./prisma-db.js";
 
-const express = require("express");
-const cors = require("cors");
-
-// const pool = require("./db");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-//Comprobar la conexión
+
+//------------------------- Comprobar la conexión
+
 app.get("/", (req, res) => {
     res.send("Backend funcionando con Prisma");
 });
-
-
-// app.get("/db-test", async (req, res) => {
-//     try {
-//         const result = await prisma.$queryRaw`
-//       SELECT
-//         current_database() AS base,
-//         current_user AS usuario
-//     `;
-
-//         res.json(result[0]);
-//     } catch (error) {
-//         console.error("Error de PostgreSQL:", error.message);
-
-//         res.status(500).json({
-//             error: "No se pudo consultar la base de datos",
-//         });
-//     }
-// });
 
 
 //------------------------- GET allProducts
@@ -48,8 +29,6 @@ app.get("/products", async (req, res) => {
             },
         });
 
-        // res.json(products)
-
         res.json(products);
 
     } catch (error) {
@@ -60,6 +39,7 @@ app.get("/products", async (req, res) => {
         });
     }
 });
+
 
 //------------------------- GET product
 
@@ -94,6 +74,7 @@ app.get("/products/:id", async (req, res) => {
 
 
 //------------------------- GET allStatus
+
 app.get("/status", async (req, res) => {
     try {
         const statuses = await prisma.status.findMany({
@@ -148,7 +129,6 @@ app.patch("/orders/:id/status", async (req, res) => {
         res.status(500).json({ error: "Error al actualizar el estado de la orden" });
     }
 });
-
 
 
 //------------------------- GET allUsers
@@ -218,8 +198,6 @@ app.get("/users/:id", async (req, res) => {
             }
         })
 
-        //  res.json(user)
-
         const { user_id, user_name, rol, orders, pending_orders } = user
 
         res.json({
@@ -241,6 +219,7 @@ app.get("/users/:id", async (req, res) => {
         });
     }
 })
+
 
 //------------------------- GET allCategories
 
@@ -265,7 +244,9 @@ app.get("/category", async (req, res) => {
     }
 })
 
+
 //------------------------- GET productsOneCategory
+
 app.get("/category/:id", async (req, res) => {
     const id = req.params.id
 
@@ -299,9 +280,7 @@ app.get("/category/:id", async (req, res) => {
             error: `No se pudo obtener productos de la categoria`,
         });
     }
-
 })
-
 
 
 //------------------------- GET allSupplier
@@ -328,8 +307,8 @@ app.get("/supplier", async (req, res) => {
 })
 
 
-
 //------------------------- GET productsOneSupplier
+
 app.get("/supplier/:id", async (req, res) => {
     const id = req.params.id
 
@@ -363,10 +342,7 @@ app.get("/supplier/:id", async (req, res) => {
             error: `No se pudo obtener productos de la categoria`,
         });
     }
-
 })
-
-
 
 
 //------------------------- GET allOrders
@@ -386,7 +362,6 @@ app.get("/orders", async (req, res) => {
             }
         })
 
-        // res.json(orders)
         res.json(
             orders.map(({ users, status, ...order }) => ({
                 ...order,
@@ -406,6 +381,7 @@ app.get("/orders", async (req, res) => {
 
 
 //------------------------- GET oneOrder
+
 app.get("/orders/:id", async (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
@@ -468,8 +444,6 @@ app.get("/orders/:id", async (req, res) => {
 
 //------------------------- GET userOrder
 
-
-
 app.get("/users/:id/orders", async (req, res) => {
 
     const id = Number(req.params.id)
@@ -509,8 +483,6 @@ app.get("/users/:id/orders", async (req, res) => {
 
             }))
         )
-
-
     } catch (error) {
         console.error(`Error al obtener ordenes del usuario`, error);
 
@@ -520,7 +492,9 @@ app.get("/users/:id/orders", async (req, res) => {
     }
 })
 
+
 //------------------------- PATCH updateOrder
+
 app.patch("/orders/:id", async (req, res) => {
     const id = Number(req.params.id);
     const { orderedProductsUpdated } = req.body;
@@ -621,8 +595,6 @@ app.post("/users/:id/addOrder", async (req, res) => {
                 ...op,
             })),
         })
-
-
     } catch (error) {
         // P2003: violación de clave foránea (usuario o producto inexistente)
         if (error.code === "P2003") {
@@ -634,8 +606,8 @@ app.post("/users/:id/addOrder", async (req, res) => {
 });
 
 
-
 //------------------------- GET pending_products
+
 app.get("/users/:id/pending", async (req, res) => {
     const userId = Number(req.params.id);
     try {
@@ -694,6 +666,7 @@ app.put("/users/:id/pending", async (req, res) => {
         res.status(500).json({ error: "No se pudo actualizar el carrito" });
     }
 });
+
 
 //------------------------- DELETE pending_products
 
@@ -776,6 +749,7 @@ app.delete("/users/:id/delete-pending", async (req, res) => {
 
 
 //------------------------- PATCH updateStock
+
 app.patch("/products/:id", async (req, res) => {
     const id = Number(req.params.id);
     const stock = Number(req.body.product_stock);
