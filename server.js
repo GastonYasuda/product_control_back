@@ -14,7 +14,7 @@ app.use(express.json());
 //------------------------- Comprobar la conexión
 
 app.get("/", (req, res) => {
-    res.send("Backend funcionando con Prisma");
+    res.send("Backend funcionando con Prisma!!!");
 });
 
 
@@ -46,7 +46,6 @@ app.get("/products", async (req, res) => {
 app.get("/products/:id", async (req, res) => {
     const id = Number(req.params.id)
 
-    //valido que el id sea un numero
     if (!Number.isInteger(id) || id <= 0) {
         return res.status(400).json({ error: "El id debe ser un número entero positivo" });
     }
@@ -398,8 +397,8 @@ app.get("/orders/:id", async (req, res) => {
                 users: { select: { user_name: true, user_id: true } },
                 ordered_products: {
                     select: {
-                        ordered_product_id: true,        // ← agregado
-                        product_checked: true,           // ← agregado
+                        ordered_product_id: true,
+                        product_checked: true,
                         ordered_product_quantity: true,
                         products: {
                             select: {
@@ -413,7 +412,7 @@ app.get("/orders/:id", async (req, res) => {
             },
         });
 
-        if (!order) {                            // ← agregado
+        if (!order) {
             return res.status(404).json({ error: `No existe la orden id ${id}` });
         }
 
@@ -426,8 +425,8 @@ app.get("/orders/:id", async (req, res) => {
             status_name: status?.status_name ?? null,
             ordered_products: ordered_products.map(
                 ({ ordered_product_id, product_checked, products, ordered_product_quantity }) => ({
-                    ordered_product_id,                          // ← agregado
-                    product_checked: product_checked ?? false,   // ← agregado
+                    ordered_product_id,
+                    product_checked: product_checked ?? false,
                     product_id: products?.product_id ?? null,
                     product_name: products?.product_name ?? null,
                     product_img: products?.product_img ?? null,
@@ -562,11 +561,11 @@ app.post("/users/:id/addOrder", async (req, res) => {
     try {
         const order = await prisma.orders.create({
             data: {
-                order_user: user_id,//id del usuario
+                order_user: user_id,
                 ordered_products: {
                     create: products.map((p) => ({
-                        product_id: p.product_id,//id del producto
-                        ordered_product_quantity: p.quantity,//cantidad del producto
+                        product_id: p.product_id,
+                        ordered_product_quantity: p.quantity,
                     })),
                 },
             },
